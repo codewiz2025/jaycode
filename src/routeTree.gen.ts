@@ -11,8 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PreviewRouteImport } from './routes/preview'
-import { Route as ApiProjectRouteImport } from './routes/api/project'
 import { Route as ApiAiChatRouteImport } from './routes/api/ai-chat'
+import { Route as ApiProjectRouteImport } from './routes/api/project'
+import { Route as ApiAuthSendVerificationRouteImport } from './routes/api/auth/send-verification'
+import { Route as ApiAuthStatusRouteImport } from './routes/api/auth/status'
+import { Route as ApiAuthVerifyRouteImport } from './routes/api/auth/verify'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -24,49 +27,98 @@ const PreviewRoute = PreviewRouteImport.update({
   path: '/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiChatRoute = ApiAiChatRouteImport.update({
+  id: '/api/ai-chat',
+  path: '/api/ai-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiProjectRoute = ApiProjectRouteImport.update({
   id: '/api/project',
   path: '/api/project',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAiChatRoute = ApiAiChatRouteImport.update({
-  id: '/api/ai-chat',
-  path: '/api/ai-chat',
+const ApiAuthSendVerificationRoute = ApiAuthSendVerificationRouteImport.update({
+  id: '/api/auth/send-verification',
+  path: '/api/auth/send-verification',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthStatusRoute = ApiAuthStatusRouteImport.update({
+  id: '/api/auth/status',
+  path: '/api/auth/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthVerifyRoute = ApiAuthVerifyRouteImport.update({
+  id: '/api/auth/verify',
+  path: '/api/auth/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/preview': typeof PreviewRoute
-  '/api/project': typeof ApiProjectRoute
   '/api/ai-chat': typeof ApiAiChatRoute
+  '/api/project': typeof ApiProjectRoute
+  '/api/auth/send-verification': typeof ApiAuthSendVerificationRoute
+  '/api/auth/status': typeof ApiAuthStatusRoute
+  '/api/auth/verify': typeof ApiAuthVerifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/preview': typeof PreviewRoute
-  '/api/project': typeof ApiProjectRoute
   '/api/ai-chat': typeof ApiAiChatRoute
+  '/api/project': typeof ApiProjectRoute
+  '/api/auth/send-verification': typeof ApiAuthSendVerificationRoute
+  '/api/auth/status': typeof ApiAuthStatusRoute
+  '/api/auth/verify': typeof ApiAuthVerifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/preview': typeof PreviewRoute
-  '/api/project': typeof ApiProjectRoute
   '/api/ai-chat': typeof ApiAiChatRoute
+  '/api/project': typeof ApiProjectRoute
+  '/api/auth/send-verification': typeof ApiAuthSendVerificationRoute
+  '/api/auth/status': typeof ApiAuthStatusRoute
+  '/api/auth/verify': typeof ApiAuthVerifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/preview' | '/api/project' | '/api/ai-chat'
+  fullPaths:
+    | '/'
+    | '/preview'
+    | '/api/ai-chat'
+    | '/api/project'
+    | '/api/auth/send-verification'
+    | '/api/auth/status'
+    | '/api/auth/verify'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/preview' | '/api/project' | '/api/ai-chat'
-  id: '__root__' | '/' | '/preview' | '/api/project' | '/api/ai-chat'
+  to:
+    | '/'
+    | '/preview'
+    | '/api/ai-chat'
+    | '/api/project'
+    | '/api/auth/send-verification'
+    | '/api/auth/status'
+    | '/api/auth/verify'
+  id:
+    | '__root__'
+    | '/'
+    | '/preview'
+    | '/api/ai-chat'
+    | '/api/project'
+    | '/api/auth/send-verification'
+    | '/api/auth/status'
+    | '/api/auth/verify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PreviewRoute: typeof PreviewRoute
-  ApiProjectRoute: typeof ApiProjectRoute
   ApiAiChatRoute: typeof ApiAiChatRoute
+  ApiProjectRoute: typeof ApiProjectRoute
+  ApiAuthSendVerificationRoute: typeof ApiAuthSendVerificationRoute
+  ApiAuthStatusRoute: typeof ApiAuthStatusRoute
+  ApiAuthVerifyRoute: typeof ApiAuthVerifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,25 +151,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProjectRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/send-verification': {
+      id: '/api/auth/send-verification'
+      path: '/api/auth/send-verification'
+      fullPath: '/api/auth/send-verification'
+      preLoaderRoute: typeof ApiAuthSendVerificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/status': {
+      id: '/api/auth/status'
+      path: '/api/auth/status'
+      fullPath: '/api/auth/status'
+      preLoaderRoute: typeof ApiAuthStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/verify': {
+      id: '/api/auth/verify'
+      path: '/api/auth/verify'
+      fullPath: '/api/auth/verify'
+      preLoaderRoute: typeof ApiAuthVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PreviewRoute: PreviewRoute,
-  ApiProjectRoute: ApiProjectRoute,
   ApiAiChatRoute: ApiAiChatRoute,
+  ApiProjectRoute: ApiProjectRoute,
+  ApiAuthSendVerificationRoute: ApiAuthSendVerificationRoute,
+  ApiAuthStatusRoute: ApiAuthStatusRoute,
+  ApiAuthVerifyRoute: ApiAuthVerifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

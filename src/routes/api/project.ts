@@ -1,9 +1,9 @@
-import { getUser } from "@netlify/identity";
 import { createFileRoute } from "@tanstack/react-router";
 import { eq } from "drizzle-orm";
 
 import { db } from "../../../db/index.js";
 import { projects, type StoredProjectFile } from "../../../db/schema.js";
+import { verifiedUser } from "../../lib/email-verification";
 
 const allowedLanguages = new Set([
   "html",
@@ -30,10 +30,8 @@ function isStoredFile(value: unknown): value is StoredProjectFile {
   );
 }
 
-async function authenticatedUser() {
-  const user = await getUser();
-  return user?.id ? user : null;
-}
+// Signed in AND email confirmed.
+const authenticatedUser = verifiedUser;
 
 export const Route = createFileRoute("/api/project")({
   server: {

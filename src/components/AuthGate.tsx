@@ -27,6 +27,65 @@ export function AuthGate({ children }: AuthGateProps) {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [verified, setVerified] = useState<boolean | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+
+  const sendVerification = useCallback(async () => {
+    setError("");
+    setMessage("");
+    const response = await fetch("/api/auth/send-verification", { method: "POST" });
+    const body = (await response.json().catch(() => ({}))) as {
+      sent?: boolean;
+      verified?: boolean;
+      error?: string;
+    };
+    if (body.verified) setVerified(true);
+    else if (response.ok) {
+      setMessage("Confirmation email sent. Check your inbox (and spam folder).");
+      setCooldown(60);
+    } else setError(body.error ?? "Could not send the email. Try again.");
+  }, []);
+
+  const checkStatus = useCallback(async () => {
+    const response = await fetch("/api/auth/status", { cache: "no-store" });
+    if (!response.ok) return setVerified(false);
+    const body = (await response.json()) as { verified: boolean };
+    setVerified(body.verified);
+    return body.verified;
+  }, []);
+
+  // Whenever a user is signed in, find out whether their email is confirmed.
+  useEffect(() => {
+    if (!user) return setVerified(null);
+    let active = true;
+    void checkStatus().then(async (ok) => {
+      if (!active || ok) return;
+      // Brand-new account that has never been emailed: send the first email.
+      if (sessionStorage.getItem("jc-send-verification")) {
+        sessionStorage.removeItem("jc-send-verification");
+        await sendVerification();
+      }
+    });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+  }, [cooldown]);
+
+  useEffect(() => {
+    const flag = new URLSearchParams(window.location.search).get("email");
+    if (flag) {
+      window.history.replaceState({}, "", "/");
+      if (flag === "verified") setMessage("Email confirmed! Sign in to open your workspace.");
+      else setError("That confirmation link is invalid or expired. Sign in to get a new one.");
+    }
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -65,6 +124,7 @@ export function AuthGate({ children }: AuthGateProps) {
         const created = await signup(email.trim(), password, { full_name: name.trim() });
         const currentUser = await getUser();
         if (currentUser) {
+          sessionStorage.setItem("jc-send-verification", "1");
           setUser(currentUser);
         } else {
           setMessage(
@@ -99,7 +159,63 @@ export function AuthGate({ children }: AuthGateProps) {
     );
   }
 
-  if (user) return children(user, signOut);
+  if (user && verified === null) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background text-sm text-muted-foreground">
+        <Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" /> Checking your account…
+      </div>
+    );
+  }
+
+  if (user && verified) return children(user, signOut);
+
+  if (user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[oklch(0.105_0.022_255)] px-5 py-10 text-foreground">
+        <section className="w-full max-w-md rounded-2xl border border-border bg-[oklch(0.14_0.025_255)] p-8 text-center shadow-2xl">
+          <img
+            src={jaytech}
+            alt="JayCode"
+            className="mx-auto h-12 w-12 rounded-xl border border-primary/60 object-cover"
+          />
+          <h1 className="mt-5 text-2xl font-semibold">Confirm your email</h1>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            We sent a confirmation link to <strong className="text-foreground">{user.email}</strong>
+            . Click it, then come back here.
+          </p>
+          {error && (
+            <p className="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              {error}
+            </p>
+          )}
+          {message && (
+            <p className="mt-4 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-primary">
+              {message}
+            </p>
+          )}
+          <button
+            onClick={() => void checkStatus()}
+            className="mt-6 flex h-10 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground hover:brightness-110"
+          >
+            I've confirmed my email
+          </button>
+          <button
+            disabled={cooldown > 0}
+            onClick={() => void sendVerification()}
+            className="mt-3 flex h-10 w-full items-center justify-center rounded-md border border-border text-sm hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {cooldown > 0 ? `Resend email (${cooldown}s)` : "Resend email"}
+          </button>
+          <button
+            onClick={() => void signOut()}
+            className="mt-4 text-xs text-muted-foreground underline hover:text-foreground"
+          >
+            Sign out
+          </button>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[oklch(0.105_0.022_255)] px-5 py-10 text-foreground">
