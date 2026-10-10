@@ -30,7 +30,7 @@ For local AI responses, add your provider credentials to `.env`. The deployed Ne
 
 ## Email confirmation (Resend)
 
-New accounts must confirm their email before the workspace opens. Emails are sent with Resend.
+New accounts must enter a 6-digit code emailed to them before the workspace opens. Codes expire after 10 minutes, allow 5 attempts, and are sent with Resend.
 
 1. In **Netlify → Site configuration → Environment variables**, add `RESEND_API_KEY`
    (scope: Functions/Runtime, mark as secret). Optionally add `EMAIL_FROM` and `EMAIL_VERIFY_SECRET`.

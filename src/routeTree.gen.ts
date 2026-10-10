@@ -15,7 +15,7 @@ import { Route as ApiAiChatRouteImport } from './routes/api/ai-chat'
 import { Route as ApiProjectRouteImport } from './routes/api/project'
 import { Route as ApiAuthSendVerificationRouteImport } from './routes/api/auth/send-verification'
 import { Route as ApiAuthStatusRouteImport } from './routes/api/auth/status'
-import { Route as ApiAuthVerifyRouteImport } from './routes/api/auth/verify'
+import { Route as ApiAuthVerifyCodeRouteImport } from './routes/api/auth/verify-code'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -47,9 +47,9 @@ const ApiAuthStatusRoute = ApiAuthStatusRouteImport.update({
   path: '/api/auth/status',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthVerifyRoute = ApiAuthVerifyRouteImport.update({
-  id: '/api/auth/verify',
-  path: '/api/auth/verify',
+const ApiAuthVerifyCodeRoute = ApiAuthVerifyCodeRouteImport.update({
+  id: '/api/auth/verify-code',
+  path: '/api/auth/verify-code',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -60,7 +60,7 @@ export interface FileRoutesByFullPath {
   '/api/project': typeof ApiProjectRoute
   '/api/auth/send-verification': typeof ApiAuthSendVerificationRoute
   '/api/auth/status': typeof ApiAuthStatusRoute
-  '/api/auth/verify': typeof ApiAuthVerifyRoute
+  '/api/auth/verify-code': typeof ApiAuthVerifyCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -69,7 +69,7 @@ export interface FileRoutesByTo {
   '/api/project': typeof ApiProjectRoute
   '/api/auth/send-verification': typeof ApiAuthSendVerificationRoute
   '/api/auth/status': typeof ApiAuthStatusRoute
-  '/api/auth/verify': typeof ApiAuthVerifyRoute
+  '/api/auth/verify-code': typeof ApiAuthVerifyCodeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -79,7 +79,7 @@ export interface FileRoutesById {
   '/api/project': typeof ApiProjectRoute
   '/api/auth/send-verification': typeof ApiAuthSendVerificationRoute
   '/api/auth/status': typeof ApiAuthStatusRoute
-  '/api/auth/verify': typeof ApiAuthVerifyRoute
+  '/api/auth/verify-code': typeof ApiAuthVerifyCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -90,7 +90,7 @@ export interface FileRouteTypes {
     | '/api/project'
     | '/api/auth/send-verification'
     | '/api/auth/status'
-    | '/api/auth/verify'
+    | '/api/auth/verify-code'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -99,7 +99,7 @@ export interface FileRouteTypes {
     | '/api/project'
     | '/api/auth/send-verification'
     | '/api/auth/status'
-    | '/api/auth/verify'
+    | '/api/auth/verify-code'
   id:
     | '__root__'
     | '/'
@@ -108,7 +108,7 @@ export interface FileRouteTypes {
     | '/api/project'
     | '/api/auth/send-verification'
     | '/api/auth/status'
-    | '/api/auth/verify'
+    | '/api/auth/verify-code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -118,7 +118,7 @@ export interface RootRouteChildren {
   ApiProjectRoute: typeof ApiProjectRoute
   ApiAuthSendVerificationRoute: typeof ApiAuthSendVerificationRoute
   ApiAuthStatusRoute: typeof ApiAuthStatusRoute
-  ApiAuthVerifyRoute: typeof ApiAuthVerifyRoute
+  ApiAuthVerifyCodeRoute: typeof ApiAuthVerifyCodeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -165,11 +165,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/auth/verify': {
-      id: '/api/auth/verify'
-      path: '/api/auth/verify'
-      fullPath: '/api/auth/verify'
-      preLoaderRoute: typeof ApiAuthVerifyRouteImport
+    '/api/auth/verify-code': {
+      id: '/api/auth/verify-code'
+      path: '/api/auth/verify-code'
+      fullPath: '/api/auth/verify-code'
+      preLoaderRoute: typeof ApiAuthVerifyCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -182,7 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiProjectRoute: ApiProjectRoute,
   ApiAuthSendVerificationRoute: ApiAuthSendVerificationRoute,
   ApiAuthStatusRoute: ApiAuthStatusRoute,
-  ApiAuthVerifyRoute: ApiAuthVerifyRoute,
+  ApiAuthVerifyCodeRoute: ApiAuthVerifyCodeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

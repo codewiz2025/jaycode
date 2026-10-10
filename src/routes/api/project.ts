@@ -31,13 +31,13 @@ function isStoredFile(value: unknown): value is StoredProjectFile {
 }
 
 // Signed in AND email confirmed.
-const authenticatedUser = verifiedUser;
+const authenticatedUser = (request: Request) => verifiedUser(request);
 
 export const Route = createFileRoute("/api/project")({
   server: {
     handlers: {
-      GET: async () => {
-        const user = await authenticatedUser();
+      GET: async ({ request }) => {
+        const user = await authenticatedUser(request);
         if (!user) return new Response("Unauthorized", { status: 401 });
 
         const [project] = await db
@@ -59,7 +59,7 @@ export const Route = createFileRoute("/api/project")({
         );
       },
       POST: async ({ request }) => {
-        const user = await authenticatedUser();
+        const user = await authenticatedUser(request);
         if (!user) return new Response("Unauthorized", { status: 401 });
 
         const body = (await request.json().catch(() => null)) as {

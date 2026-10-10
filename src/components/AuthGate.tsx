@@ -28,7 +28,9 @@ export function AuthGate({ children }: AuthGateProps) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [verified, setVerified] = useState<boolean | null>(null);
+  const [code, setCode] = useState("");
   const [cooldown, setCooldown] = useState(0);
+  const [verifying, setVerifying] = useState(false);
 
   const sendVerification = useCallback(async () => {
     setError("");
@@ -41,51 +43,68 @@ export function AuthGate({ children }: AuthGateProps) {
     };
     if (body.verified) setVerified(true);
     else if (response.ok) {
-      setMessage("Confirmation email sent. Check your inbox (and spam folder).");
+      setMessage("We sent a 6-digit code to your email. Check your inbox and spam folder.");
       setCooldown(60);
-    } else setError(body.error ?? "Could not send the email. Try again.");
+    } else {
+      setError(body.error ?? "Could not send the code. Try again.");
+      if (response.status === 429) setCooldown(60);
+    }
   }, []);
 
-  const checkStatus = useCallback(async () => {
-    const response = await fetch("/api/auth/status", { cache: "no-store" });
-    if (!response.ok) return setVerified(false);
-    const body = (await response.json()) as { verified: boolean };
-    setVerified(body.verified);
-    return body.verified;
-  }, []);
+  const submitCode = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setVerifying(true);
+    setError("");
+    setMessage("");
+    try {
+      const response = await fetch("/api/auth/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const body = (await response.json().catch(() => ({}))) as {
+        verified?: boolean;
+        error?: string;
+      };
+      if (body.verified) setVerified(true);
+      else setError(body.error ?? "Could not verify the code. Try again.");
+    } finally {
+      setVerifying(false);
+    }
+  };
 
-  // Whenever a user is signed in, find out whether their email is confirmed.
+  // Whenever a user is signed in, find out whether their email is verified yet.
   useEffect(() => {
-    if (!user) return setVerified(null);
+    if (!user) {
+      setVerified(null);
+      setCode("");
+      return;
+    }
     let active = true;
-    void checkStatus().then(async (ok) => {
-      if (!active || ok) return;
-      // Brand-new account that has never been emailed: send the first email.
-      if (sessionStorage.getItem("jc-send-verification")) {
-        sessionStorage.removeItem("jc-send-verification");
-        await sendVerification();
+    void (async () => {
+      try {
+        const response = await fetch("/api/auth/status", { cache: "no-store" });
+        const body = response.ok
+          ? ((await response.json()) as { verified: boolean; codeSent: boolean })
+          : null;
+        if (!active) return;
+        setVerified(body?.verified ?? false);
+        if (!body) setError("Could not check your account. Try signing out and in again.");
+        else if (!body.verified && !body.codeSent) await sendVerification();
+      } catch {
+        if (active) setVerified(false);
       }
-    });
+    })();
     return () => {
       active = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user, sendVerification]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
     const id = setTimeout(() => setCooldown((s) => s - 1), 1000);
     return () => clearTimeout(id);
   }, [cooldown]);
-
-  useEffect(() => {
-    const flag = new URLSearchParams(window.location.search).get("email");
-    if (flag) {
-      window.history.replaceState({}, "", "/");
-      if (flag === "verified") setMessage("Email confirmed! Sign in to open your workspace.");
-      else setError("That confirmation link is invalid or expired. Sign in to get a new one.");
-    }
-  }, []);
 
   useEffect(() => {
     let active = true;
@@ -124,7 +143,6 @@ export function AuthGate({ children }: AuthGateProps) {
         const created = await signup(email.trim(), password, { full_name: name.trim() });
         const currentUser = await getUser();
         if (currentUser) {
-          sessionStorage.setItem("jc-send-verification", "1");
           setUser(currentUser);
         } else {
           setMessage(
@@ -178,33 +196,47 @@ export function AuthGate({ children }: AuthGateProps) {
             alt="JayCode"
             className="mx-auto h-12 w-12 rounded-xl border border-primary/60 object-cover"
           />
-          <h1 className="mt-5 text-2xl font-semibold">Confirm your email</h1>
+          <h1 className="mt-5 text-2xl font-semibold">Verify your email</h1>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            We sent a confirmation link to <strong className="text-foreground">{user.email}</strong>
-            . Click it, then come back here.
+            Enter the 6-digit code we sent to{" "}
+            <strong className="text-foreground">{user.email}</strong>.
           </p>
-          {error && (
-            <p className="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-              {error}
-            </p>
-          )}
-          {message && (
-            <p className="mt-4 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-primary">
-              {message}
-            </p>
-          )}
-          <button
-            onClick={() => void checkStatus()}
-            className="mt-6 flex h-10 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground hover:brightness-110"
-          >
-            I've confirmed my email
-          </button>
+          <form onSubmit={submitCode} className="mt-6">
+            <input
+              required
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="\d{6}"
+              maxLength={6}
+              value={code}
+              onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
+              className="h-12 w-full rounded-md border border-border bg-background text-center text-2xl font-semibold tracking-[0.5em] text-foreground outline-none transition focus:border-primary"
+              placeholder="······"
+            />
+            {error && (
+              <p className="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                {error}
+              </p>
+            )}
+            {message && (
+              <p className="mt-4 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-primary">
+                {message}
+              </p>
+            )}
+            <button
+              disabled={verifying || code.length !== 6}
+              className="mt-5 flex h-10 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {verifying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Verify and continue
+            </button>
+          </form>
           <button
             disabled={cooldown > 0}
             onClick={() => void sendVerification()}
             className="mt-3 flex h-10 w-full items-center justify-center rounded-md border border-border text-sm hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {cooldown > 0 ? `Resend email (${cooldown}s)` : "Resend email"}
+            {cooldown > 0 ? `Resend code (${cooldown}s)` : "Send a new code"}
           </button>
           <button
             onClick={() => void signOut()}

@@ -1,4 +1,4 @@
-import { jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export interface StoredProjectFile {
   id: string;
@@ -21,5 +21,8 @@ export const emailVerifications = pgTable("email_verifications", {
   email: text().notNull(),
   verifiedAt: timestamp("verified_at", { withTimezone: true }),
   lastSentAt: timestamp("last_sent_at", { withTimezone: true }),
+  codeHash: text("code_hash"),
+  codeExpiresAt: timestamp("code_expires_at", { withTimezone: true }),
+  attempts: integer().default(0).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
