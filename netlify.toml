@@ -1,0 +1,11 @@
+[build]
+  command = "bun install --frozen-lockfile && bun run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[dev]
+  command = "bun run dev"
+  targetPort = 5173
+  port = 8889
