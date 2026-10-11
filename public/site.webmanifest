@@ -1,1 +1,19 @@
-{"name":"JayCode","short_name":"JayCode","icons":[{"src":"/icon-192.png","sizes":"192x192","type":"image/png"},{"src":"/icon-512.png","sizes":"512x512","type":"image/png"}],"theme_color":"#030712","background_color":"#030712","display":"standalone"}
+{
+  "id": "/",
+  "name": "JayCode — The JayTech IDE",
+  "short_name": "JayCode",
+  "description": "Cloud-synced browser IDE for HTML, CSS, JavaScript and Python.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#030712",
+  "background_color": "#030712",
+  "categories": ["developer", "productivity"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

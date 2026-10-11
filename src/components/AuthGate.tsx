@@ -12,6 +12,7 @@ import { Cloud, Loader2, LockKeyhole } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from "react";
 
 import jaytech from "@/assets/jaytech.png";
+import { InstallButton } from "@/components/InstallButton";
 
 interface AuthGateProps {
   children: (user: User, signOut: () => Promise<void>) => ReactNode;
@@ -252,6 +253,9 @@ export function AuthGate({ children }: AuthGateProps) {
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[oklch(0.105_0.022_255)] px-5 py-10 text-foreground">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(47,123,255,0.16),transparent_32%),linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:auto,32px_32px,32px_32px]" />
+      <div className="absolute right-4 top-4 z-10">
+        <InstallButton />
+      </div>
       <section className="relative grid w-full max-w-4xl overflow-hidden rounded-2xl border border-border bg-[oklch(0.14_0.025_255)] shadow-2xl md:grid-cols-[1.08fr_0.92fr]">
         <div className="flex flex-col justify-between border-b border-border p-7 md:border-b-0 md:border-r md:p-10">
           <div>

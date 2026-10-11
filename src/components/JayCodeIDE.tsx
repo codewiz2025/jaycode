@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 
 import jaytech from "@/assets/jaytech.png";
+import { InstallButton } from "@/components/InstallButton";
 import type { CloudProject, SaveCloudProject } from "@/lib/cloud-project";
 import {
   buildPreviewDocument,
@@ -675,6 +676,7 @@ export function JayCodeIDE({ user, onSignOut }: JayCodeIDEProps) {
           >
             <FolderDown className="h-3.5 w-3.5" /> .zip
           </button>
+          <InstallButton />
           <div
             className="hidden max-w-36 truncate border-l border-border pl-2 text-[11px] text-muted-foreground xl:block"
             title={user.email}
